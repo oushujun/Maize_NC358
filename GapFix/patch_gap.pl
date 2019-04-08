@@ -24,7 +24,7 @@ open GAPlist, "<$gap_list" or die $usage;
 my %gaplist;
 while (<GAPlist>){
 	my ($id, $start, $end) = (split);
-	my $gap_len = $end - $start +1;
+	my $gap_len = $end - $start + 1;
 	$gaplist{$id} = [$start, $end, $gap_len];
 	}
 close GAPlist;
