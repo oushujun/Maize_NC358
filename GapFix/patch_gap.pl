@@ -13,6 +13,7 @@ my $usage = "\nPatch gaps an old scaffold with sequences in a new scaffold.
 my $old_genome = $ARGV[0]; #the error-corrected genome with gap
 my $new_genome = $ARGV[1]; #the error-prone genome without gap
 my $gap_list = $ARGV[2]; #list of gap positions in $old_genome with format: scaffoid_id gap_start gap_end
+my $flank_len = 5000; #length of flanking sequence to anchor the gap location.
 
 #dependencies
 my $script_path = dirname(__FILE__);
@@ -30,23 +31,25 @@ while (<GAPlist>){
 close GAPlist;
 
 #call flanking sequence of each gap
-`perl -nle 'my (\$id, \$start, \$end)=(split); my (\$left, \$right)=(\$start-1000, \$end+1000); (\$start, \$end)=(\$start+100, \$end-100); my \$list="\${id}_left \$id:\$left..\$start\n\${id}_right \$id:\$end..\$right"; print \$list' $gap_list | perl $callseq - -C $old_genome > $gap_list.flank.fa`;
+`perl -nle 'my (\$id, \$start, \$end)=(split); my (\$left, \$right)=(\$start-$flank_len, \$end+$flank_len); (\$start, \$end)=(\$start+100, \$end-100); my \$list="\${id}_left \$id:\$left..\$start\n\${id}_right \$id:\$end..\$right"; print \$list' $gap_list | perl $callseq - -C $old_genome > $gap_list.flank.fa`;
 
 #find new coordinates of gaps in $new_genome
 open Blast, "$blastn -query $gap_list.flank.fa -subject $new_genome -outfmt=6 |" or die $!;
 my %patlist;
+my ($left_coor, $right_coor) = ('', '');
 while (<Blast>){
 	my ($query, $subject, $iden, $len, $new_s, $new_e)=(split)[0,1,2,3,8,9];
 	my ($id, $old_s, $old_e, $part)=($1,$2,$3,$4) if $query=~/^(.*):([0-9]+)\.\.([0-9]+)\|.*(left|right)$/;
 	next unless $id eq $subject; #require align to the same scaffold
-	next unless $iden > 95 and $len > 850; #alignment at least 850 bp with at least 95% identity
+	next unless $iden > 95 and $len > 0.9 * $flank_len; #alignment at least 850 bp with at least 95% identity
 	next if abs($new_s-$old_s) > 10000000; #old and new coordinates do not differ more than 10 Mb
-	$patlist{$id}[0] = $new_e if $part eq "left";
-	$patlist{$id}[1] = $new_s if $part eq "right";
-	if (defined $patlist{$id}[0] and defined $patlist{$id}[1]){
+	$left_coor = $new_e if $part eq "left";
+	$right_coor = $new_s if $part eq "right";
+	if ($left_coor ne '' and $right_coor ne '' and $left_coor < $right_coor){
+		($patlist{$id}[0], $patlist{$id}[1]) = ($left_coor, $right_coor);
 		my $new_len = $patlist{$id}[1] - $patlist{$id}[0] + 1;
 		my $diff = abs($new_len - $gaplist{$id}[2]);
-		print "Warning: patch sequence is $diff bp different from the gap!\n" if $diff > 100000;
+		print "Warning: patch sequence is $diff bp different from the gap!\n\tOld: $gaplist{$id}[0]..$gaplist{$id}[1]\n\tNew: $left_coor..$right_coor\n\n" if $diff > 100000;
 		}
 	}
 
