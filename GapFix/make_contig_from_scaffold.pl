@@ -7,13 +7,13 @@ my $usage = "\nSplit scaffolds into contigs based on a preset length of N-string
 \n\tperl make_contig_from_scaffold.pl scaffold.fasta > contig.fasta\n\n";
 
 my $genome = $ARGV[0];
-my $min_gap_len = 20; #the minimum length of gaps to make a split
+my $min_gap_len = 1; #the minimum length of N gaps to make a split
 
 open Genome, "<$genome" or die $usage;
 
 $/ = "\n>";
-my $id = 0; #id of contig
 while (<Genome>){
+	my $id = 0; #id of contig
 	s/>//g;
 	my ($name, $seq) = (split /\n/, $_, 2);
 	$seq =~ s/\s+//g;
