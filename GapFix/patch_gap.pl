@@ -4,7 +4,7 @@ use File::Basename;
 #Shujun Ou (shujun.ou.1@gmail.com) 04/04/2019
 #required blastn, call_seq_by_list.pl
 
-my $usage = "\nPatch gaps an old scaffold with sequences in a new scaffold.
+my $usage = "\nPatch gaps in an old scaffold with sequences in a new scaffold.
 \n\tperl patch_gap.pl old_scaffold.fasta new_scaffold.fasta gap.list
 \n\t\tgap.list is a list of gap positions in old_scaffold.fasta with format: scaffoid_id gap_start gap_end
 \t\tThe patched file is named old_scaffold.fasta.gapfixed\n\n";
@@ -18,7 +18,7 @@ my $flank_len = 5000; #length of flanking sequence to anchor the gap location.
 #dependencies
 my $script_path = dirname(__FILE__);
 my $callseq = "$script_path/../bin/call_seq_by_list.pl";
-my $blastn = "blastn";
+my $blastn = "blastn"; #assuming blastn is in $ENV
 
 #read gap info
 open GAPlist, "<$gap_list" or die $usage;
