@@ -13,7 +13,7 @@ my $usage = "\nPatch gaps in an old scaffold with sequences in a new scaffold.
 my $old_genome = $ARGV[0]; #the error-corrected genome with gap
 my $new_genome = $ARGV[1]; #the error-prone genome without gap
 my $gap_list = $ARGV[2]; #list of gap positions in $old_genome with format: scaffoid_id gap_start gap_end
-my $flank_len = 5000; #length of flanking sequence to anchor the gap location.
+my $flank_len = 10000; #length of flanking sequence to anchor the gap location.
 
 #dependencies
 my $script_path = dirname(__FILE__);
@@ -41,7 +41,8 @@ while (<Blast>){
 	my ($query, $subject, $iden, $len, $new_s, $new_e)=(split)[0,1,2,3,8,9];
 	my ($id, $old_s, $old_e, $part)=($1,$2,$3,$4) if $query=~/^(.*):([0-9]+)\.\.([0-9]+)\|.*(left|right)$/;
 	next unless $id eq $subject; #require align to the same scaffold
-	next unless $iden > 95 and $len > 0.9 * $flank_len; #alignment at least 850 bp with at least 95% identity
+	next unless $iden > 98 and $len > 0.7 * $flank_len; #alignment at least 850 bp with at least 95% identity
+#	next unless $iden > 95 and $len > 0.9 * $flank_len; #alignment at least 850 bp with at least 95% identity
 	next if abs($new_s-$old_s) > 10000000; #old and new coordinates do not differ more than 10 Mb
 	$left_coor = $new_e if $part eq "left";
 	$right_coor = $new_s if $part eq "right";
