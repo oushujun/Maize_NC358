@@ -9,5 +9,7 @@ This is the repository to store codes and commands for the maize NC358 assembly 
 8. [Assessing component assemblies](https://github.com/HuffordLab/Maize_NC358/tree/master/Component_assembly)
 9. [Figure plotting](https://github.com/HuffordLab/Maize_NC358/tree/master/plotting)
 
+Scripts in this repository are licensed under General Public License v3.
+
 For information inquiry please email R. Kelly Dawe (kdawe@uga.edu), Candice N. Hirsch (cnhirsch@umn.edu), Matthew B. Hufford (mhufford@iastate.edu), or Doreen Ware (ware@cshl.edu).
 
