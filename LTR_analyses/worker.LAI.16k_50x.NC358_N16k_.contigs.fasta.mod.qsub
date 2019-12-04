@@ -1,0 +1,43 @@
+#!/bin/bash -login
+#SBATCH -N 1
+#SBATCH -t 4:00:00
+#SBATCH --ntasks-per-node 28
+#SBATCH --mem=40GB
+#SBATCH -A horticulture
+
+##!/bin/bash -login
+##PBS -l nodes=1:ppn=28,walltime=20:00:00,mem=10gb
+##PBS -j oe
+##PBS -N blast
+##PBS -A horticulture
+
+module load icc/2017.1.132-GCC-6.3.0-2.27  impi/2017.1.132
+module load CD-HIT/4.6.8
+
+source activate repeatmasker
+
+cd /mnt/home/oushujun/TE/MaizeNAM/16k_50x
+
+##run LTR_FINDER
+#perl /mnt/home/oushujun/TE/MaizeNAM/bin/run_ltrfinder_in_pieces.pl -seq NC358_N16k_.contigs.fasta.mod -threads 40 -harvest_out -size 1000000 -time 300 -finder /mnt/home/oushujun/bin/LTR_FINDER.x86_64-1.0.6/ltr_finder -cut /mnt/home/oushujun/TE/MaizeNAM/bin/cut.pl
+
+##run LTRharvest
+#/mnt/home/oushujun/bin/gt-1.5.3-Linux_x86_64-64bit-complete/bin/gt suffixerator -db NC358_N16k_.contigs.fasta.mod -indexname NC358_N16k_.contigs.fasta.mod -tis -suf -lcp -des -ssp -sds -dna
+#/mnt/home/oushujun/bin/gt-1.5.3-Linux_x86_64-64bit-complete/bin/gt ltrharvest -index NC358_N16k_.contigs.fasta.mod -minlenltr 100 -maxlenltr 7000 -mintsd 4 -maxtsd 6 -motif TGCA -motifmis 1 -similar 85 -vic 10 -seed 20 -seqids yes -out NC358_N16k_.contigs.fasta.mod.ltrTE.fa > NC358_N16k_.contigs.fasta.mod.harvest.scn
+#/mnt/home/oushujun/bin/gt-1.5.3-Linux_x86_64-64bit-complete/bin/gt ltrharvest -index NC358_N16k_.contigs.fasta.mod -minlenltr 100 -maxlenltr 7000 -mintsd 4 -maxtsd 6 -similar 85 -vic 10 -seed 20 -seqids yes -out NC358_N16k_.contigs.fasta.mod.nmtf.ltrTE.fa -gff3 NC358_N16k_.contigs.fasta.mod.nmtf.gff3 > NC358_N16k_.contigs.fasta.mod.harvest.nmtf.scn
+
+##run LTR_retriever
+#cat NC358_N16k_.contigs.fasta.mod.harvest.scn NC358_N16k_.contigs.fasta.mod.finder.combine.scn > NC358_N16k_.contigs.fasta.mod.rawLTR.scn
+#/mnt/home/oushujun/git_bin/public/LTR_retriever/LTR_retriever -inharvest NC358_N16k_.contigs.fasta.mod.rawLTR.scn -threads 28 -genome NC358_N16k_.contigs.fasta.mod -v -noanno
+
+##run RepeatMasker
+##lib=/mnt/home/oushujun/TE/MaizeNAM/NC358.assembly.LTRlib.combined.fa.clust2
+lib=/mnt/home/oushujun/TE/MaizeNAM/maizeTE10102014.LTR.plus
+##lib=/mnt/home/oushujun/TE/MaizeNAM/maizeTE10102014.LTR.plus2 #too strigent, loss sensitivity
+#lib=/mnt/home/oushujun/TE/MaizeNAM/reads.corrected.1.fa.A.LTRlib.fa
+#nohup RepeatMasker -pa 28 -q -no_is -norna -nolow -div 40 -lib $lib -cutoff 225 -gff NC358_N16k_.contigs.fasta.mod
+
+#run LAI
+#nohup RepeatMasker -pa 28 -q -no_is -norna -nolow -div 40 -lib NC358_N16k_.contigs.fasta.mod.LTRlib.fa.masked.cln.plus -cutoff 225 -gff NC358_N16k_.contigs.fasta.mod
+perl ~/git_bin/public/LTR_retriever/LAI -genome NC358_N16k_.contigs.fasta.mod -intact NC358_N16k_.contigs.fasta.mod.pass.list -all NC358_N16k_.contigs.fasta.mod.out -q -t 28
+
